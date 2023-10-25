@@ -43,33 +43,70 @@ function requestAlbumFetchPromise() {
   const url = "https://api.imgur.com/3/album/" + albumId + "/images";
   fetch(url, {
     headers: {
-        'Authorization': `Client-ID ${clientId}`
-    }
+      'Authorization': `Client-ID ${clientId}`,
+    },
   })
-    .then(res => res.json())
-    .then(images => {
+    .then((res) => res.json())
+    .then((images) => {
       for (item of images.data.slice(0, 10)) {
         console.log(item);
         requestImageFetchPromise(item.id);
       }
     })
-    .catch(e => console.error("Error: " + e));
+    .catch((e) => console.error("Error: " + e));
 }
 
 function requestImageFetchPromise(imageHash) {
   const url = "https://api.imgur.com/3/image/" + imageHash;
   fetch(url, {
     headers: {
-        'Authorization': `Client-ID ${clientId}`
-    }
+      'Authorization': `Client-ID ${clientId}`,
+    },
   })
-    .then(res => res.json())
-    .then(image => {
-        let imgElem = document.createElement("img");
-        imgElem.src = image.data.link;
-        document.body.appendChild(imgElem);
+    .then((res) => res.json())
+    .then((image) => {
+      let imgElem = document.createElement("img");
+      imgElem.src = image.data.link;
+      document.body.appendChild(imgElem);
     })
-    .catch(e => console.error("Error: " + e));
+    .catch((e) => console.error("Error: " + e));
+}
+
+async function requestAlbumAsyncAwait() {
+  let albumId = document.getElementById("albumIdField").innerText;
+  if (!albumId) {
+    albumId = defaultAlbumId;
+  }
+  const url = "https://api.imgur.com/3/album/" + albumId + "/images";
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'Authorization': `Client-ID ${clientId}`,
+      },
+    });
+    if (res.ok) {
+      const images = await res.json();
+      for (item of images.data.slice(0, 10)) {
+        console.log(item);
+        requestImageAsyncAwait(item.id);
+      }
+    }
+  } catch (error) {
+    console.error("Error: " + error);
+  }
+}
+
+async function requestImageAsyncAwait(imageHash) {
+  const url = "https://api.imgur.com/3/image/" + imageHash;
+  const res = await fetch(url, {
+    headers: {
+      'Authorization': `Client-ID ${clientId}`,
+    },
+  });
+  const image = await res.json()
+  let imgElem = document.createElement("img");
+  imgElem.src = image.data.link;
+  document.body.appendChild(imgElem);
 }
 
 function processAlbumRequest(response_text) {
