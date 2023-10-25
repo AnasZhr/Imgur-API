@@ -46,8 +46,8 @@ function requestAlbumFetchPromise() {
         'Authorization': `Client-ID ${clientId}`
     }
   })
-    .then((res) => res.json())
-    .then((images) => {
+    .then(res => res.json())
+    .then(images => {
       for (item of images.data.slice(0, 10)) {
         console.log(item);
         requestImageFetchPromise(item.id);
@@ -64,9 +64,9 @@ function requestImageFetchPromise(imageHash) {
     }
   })
     .then(res => res.json())
-    .then(images => {
+    .then(image => {
         let imgElem = document.createElement("img");
-        imgElem.src = images.data.link;
+        imgElem.src = image.data.link;
         document.body.appendChild(imgElem);
     })
     .catch(e => console.error("Error: " + e));
