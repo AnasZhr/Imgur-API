@@ -1,73 +1,89 @@
 //const clientId = "ca6139e49c5bf36";
 // const clientId = "712645836bdd60b";
 const clientId = "4cbe7854ff837e2";
-var defaultAlbumId = 'Jfni3';
+var defaultAlbumId = "Jfni3";
 
 function requestAlbumXHR() {
-    let albumId = document.getElementById("albumIdField").innerText;
-    if(!albumId) {
-        albumId = defaultAlbumId;
+  let albumId = document.getElementById("albumIdField").innerText;
+  if (!albumId) {
+    albumId = defaultAlbumId;
+  }
+  var req = new XMLHttpRequest();
+  req.onreadystatechange = function () {
+    if (req.readyState == 4 && req.status == 200) {
+      processAlbumRequest(req.responseText);
+    } else if (req.readyState == 4 && req.status != 200) {
+      console.log(req.status + " Error with the imgur API: ", req.responseText);
     }
-    var req = new XMLHttpRequest();
-    req.onreadystatechange = function () {
-        if (req.readyState == 4 && req.status == 200) {
-            processAlbumRequest(req.responseText);
-        }
-        else if (req.readyState == 4 && req.status != 200) {
-            console.log(req.status + " Error with the imgur API: ", req.responseText);
-        }
-    }
-    req.open('GET', 'https://api.imgur.com/3/album/' + albumId + '/images', true); // true for asynchronous     
-    req.setRequestHeader('Authorization', 'Client-ID ' + clientId);
-    req.send();
+  };
+  req.open("GET", "https://api.imgur.com/3/album/" + albumId + "/images", true); // true for asynchronous
+  req.setRequestHeader("Authorization", "Client-ID " + clientId);
+  req.send();
 }
 
 function requestImageXHR(imageHash) {
-    var req = new XMLHttpRequest();
-    req.onreadystatechange = function () {
-        if (req.readyState == 4 && req.status == 200) {
-            processImageRequest(req.responseText);
-        }
-        else if (req.readyState == 4 && req.status != 200) {
-            console.log("Error with the imgur API");
-        }
+  var req = new XMLHttpRequest();
+  req.onreadystatechange = function () {
+    if (req.readyState == 4 && req.status == 200) {
+      processImageRequest(req.responseText);
+    } else if (req.readyState == 4 && req.status != 200) {
+      console.log("Error with the imgur API");
     }
-    req.open("GET", "https://api.imgur.com/3/image/" + imageHash, true); // true for asynchronous     
-    req.setRequestHeader('Authorization', 'Client-ID ' + clientId);
-    req.send();
+  };
+  req.open("GET", "https://api.imgur.com/3/image/" + imageHash, true); // true for asynchronous
+  req.setRequestHeader("Authorization", "Client-ID " + clientId);
+  req.send();
 }
 
 function requestAlbumFetchPromise() {
-    let albumId = document.getElementById("albumIdField").innerText;
-    const url = 'https://api.imgur.com/3/album/' + albumId + '/images'
-    fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(response.statusText);
-            }
-            return response.json();
-        })
-        .then(data => {
-            processImageRequest(data);
-        })
-        .catch(error => {
-            console.error('Failed to fetch:', error);
-        });
+  let albumId = document.getElementById("albumIdField").innerText;
+  if (!albumId) {
+    albumId = defaultAlbumId;
+  }
+  const url = "https://api.imgur.com/3/album/" + albumId + "/images";
+  fetch(url, {
+    headers: {
+        'Authorization': `Client-ID ${clientId}`
+    }
+  })
+    .then((res) => res.json())
+    .then((images) => {
+      for (item of images.data.slice(0, 10)) {
+        console.log(item);
+        requestImageFetchPromise(item.id);
+      }
+    })
+    .catch(e => console.error("Error: " + e));
+}
+
+function requestImageFetchPromise(imageHash) {
+  const url = "https://api.imgur.com/3/image/" + imageHash;
+  fetch(url, {
+    headers: {
+        'Authorization': `Client-ID ${clientId}`
+    }
+  })
+    .then(res => res.json())
+    .then(images => {
+        let imgElem = document.createElement("img");
+        imgElem.src = images.data.link;
+        document.body.appendChild(imgElem);
+    })
+    .catch(e => console.error("Error: " + e));
 }
 
 function processAlbumRequest(response_text) {
-    var respObj = JSON.parse(response_text);
-    for (item of respObj.data.slice(0, 10)){
-        console.log(item)
-        requestImageXHR(item.id);
-    }
+  var respObj = JSON.parse(response_text);
+  for (item of respObj.data.slice(0, 10)) {
+    console.log(item);
+    requestImageXHR(item.id);
+  }
 }
 
-
 function processImageRequest(response_text) {
-    var respObj = JSON.parse(response_text);
-    let imgElem = document.createElement("img");
-    imgElem.src = respObj.data.link;
-    //imgElem.referrerpolicy="no-referrer";
-    document.body.appendChild(imgElem);
+  var respObj = JSON.parse(response_text);
+  let imgElem = document.createElement("img");
+  imgElem.src = respObj.data.link;
+  //imgElem.referrerpolicy="no-referrer";
+  document.body.appendChild(imgElem);
 }
