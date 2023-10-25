@@ -3,7 +3,7 @@
 const clientId = "4cbe7854ff837e2";
 var defaultAlbumId = 'Jfni3';
 
-function requestAlbum() {
+function requestAlbumXHR() {
     let albumId = document.getElementById("albumIdField").innerText;
     if(!albumId) {
         albumId = defaultAlbumId;
@@ -22,15 +22,7 @@ function requestAlbum() {
     req.send();
 }
 
-function processAlbumRequest(response_text) {
-    var respObj = JSON.parse(response_text);
-    for (item of respObj.data.slice(0, 10)){
-        console.log(item)
-        requestImage(item.id);
-    }
-}
-
-function requestImage(imageHash) {
+function requestImageXHR(imageHash) {
     var req = new XMLHttpRequest();
     req.onreadystatechange = function () {
         if (req.readyState == 4 && req.status == 200) {
@@ -44,6 +36,33 @@ function requestImage(imageHash) {
     req.setRequestHeader('Authorization', 'Client-ID ' + clientId);
     req.send();
 }
+
+function requestAlbumFetchPromise() {
+    let albumId = document.getElementById("albumIdField").innerText;
+    const url = 'https://api.imgur.com/3/album/' + albumId + '/images'
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            processImageRequest(data);
+        })
+        .catch(error => {
+            console.error('Failed to fetch:', error);
+        });
+}
+
+function processAlbumRequest(response_text) {
+    var respObj = JSON.parse(response_text);
+    for (item of respObj.data.slice(0, 10)){
+        console.log(item)
+        requestImageXHR(item.id);
+    }
+}
+
 
 function processImageRequest(response_text) {
     var respObj = JSON.parse(response_text);

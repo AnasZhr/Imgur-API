@@ -28,7 +28,9 @@
 <body>
     <header>
         <input id="albumIdField" value="Jfni3" type="text" placeholder="Enter any imgur's album id">
-        <button onclick=requestAlbum()>View Images</button>
+        <button onclick=requestAlbumXHR()>View Images using XHR</button>
+        <button onclick=requestAlbumFetchPromise()>View Images using Fetch Promise</button>
+        <button onclick=requestAlbumAsyncAwait()>View Images using Async/Await</button>
     </header>
 </body>
 
